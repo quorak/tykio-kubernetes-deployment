@@ -1,0 +1,69 @@
+# see https://github.com/lonelycode/tyk_quickstart/blob/master/docker-compose.yml
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: tyk-deployment
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: tyk
+    spec:
+      containers:
+      - name: redis
+        image: redis:latest
+        ports:
+        - containerPort: 6379
+      - name: mongo
+        image: mongo:latest
+        ports:
+        - containerPort: 27017
+      - name: tyk-dashboard
+        image: tykio/tyk-dashboard:latest
+        ports:
+        - containerPort: 3000
+        - containerPort: 5000
+        volumeMounts:
+        - mountPath: /git-conf
+          name: git-config-volume
+        lifecycle:
+          postStart:
+            exec:
+              command:
+                - "cp"
+                - "/git-conf/conf/tyk_analytics.conf"
+                - "/opt/tyk-dashboard/tyk_analytics.conf"
+      - name: tyk-pump
+        image: tykio/tyk-pump-docker-pub:latest
+        ports:
+        - containerPort: 3000
+        - containerPort: 5000
+        volumeMounts:
+        - mountPath: /git-conf
+          name: git-config-volume
+        lifecycle:
+          postStart:
+            exec:
+              command:
+                - "cp"
+                - "/git-conf/conf/tyk_pump.conf"
+                - "/opt/tyk-pump/pump.conf"
+      - name: tyk-gateway
+        image: tykio/tyk-gateway:latest
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - mountPath: /git-conf
+          name: git-config-volume
+        lifecycle:
+          postStart:
+            exec:
+              command:
+                - "cp"
+                - "/git-conf/conf/tyk_gateway.conf"
+                - "/opt/tyk-gateway/tyk.conf"
+      volumes:
+      - name: git-config-volume
+        gitRepo:
+          repository: "https://github.com/quorak/tykio-kubernetes-deployment.git"
