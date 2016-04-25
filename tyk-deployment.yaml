@@ -2,6 +2,8 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
+  labels:
+    name: tyk-deployment
   name: tyk-deployment
 spec:
   replicas: 1
@@ -27,28 +29,17 @@ spec:
         volumeMounts:
         - mountPath: /git-conf
           name: git-config-volume
-        lifecycle:
-          postStart:
-            exec:
-              command:
-                - "cp"
-                - "/git-conf/conf/tyk_analytics.conf"
-                - "/opt/tyk-dashboard/tyk_analytics.conf"
+        command:
+        - "/opt/tyk-dashboard/tyk-analytics"
+        - "--conf=/git-conf/tykio-kubernetes-deployment/conf/tyk_analytics.conf"
       - name: tyk-pump
         image: tykio/tyk-pump-docker-pub:latest
-        ports:
-        - containerPort: 3000
-        - containerPort: 5000
         volumeMounts:
         - mountPath: /git-conf
           name: git-config-volume
-        lifecycle:
-          postStart:
-            exec:
-              command:
-                - "cp"
-                - "/git-conf/conf/tyk_pump.conf"
-                - "/opt/tyk-pump/pump.conf"
+        command:
+        - "/opt/tyk-pump/tyk-pump"
+        - "--c=/git-conf/tykio-kubernetes-deployment/conf/tyk_pump.conf"
       - name: tyk-gateway
         image: tykio/tyk-gateway:latest
         ports:
@@ -56,13 +47,9 @@ spec:
         volumeMounts:
         - mountPath: /git-conf
           name: git-config-volume
-        lifecycle:
-          postStart:
-            exec:
-              command:
-                - "cp"
-                - "/git-conf/conf/tyk_gateway.conf"
-                - "/opt/tyk-gateway/tyk.conf"
+        command:
+        - "/opt/tyk-gateway/tyk"
+        - "--conf=/git-conf/tykio-kubernetes-deployment/conf/tyk_gateway.conf"
       volumes:
       - name: git-config-volume
         gitRepo:
