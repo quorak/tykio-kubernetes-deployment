@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: tyk-service
+  name: tyk-service
+spec:
+  type: LoadBalancer
+  ports:
+    # The port that this service should serve on.
+    - port: 8080
+      protocol: TCP
+      name: gateway
+    - port: 3000
+      protocol: TCP
+      name: dashoard
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
+      name: gateway2
+  # Label keys and values that must match in order to receive traffic for this service.
+  selector:
+    app: tyk
