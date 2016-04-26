@@ -21,10 +21,13 @@ spec:
         image: mongo:latest
         ports:
         - containerPort: 27017
+        volumeMounts:
+        - name: mongo-persistent-storage
+          mountPath: /data/db
       - name: tyk-dashboard
         image: tykio/tyk-dashboard:latest
         ports:
-        - containerPort: 3000
+        - containerPort: 4000
         - containerPort: 5000
         volumeMounts:
         - mountPath: /git-conf
@@ -32,6 +35,7 @@ spec:
         command:
         - "/opt/tyk-dashboard/tyk-analytics"
         - "--conf=/git-conf/tykio-kubernetes-deployment/conf/tyk_analytics.conf"
+        - "--debug"
       - name: tyk-pump
         image: tykio/tyk-pump-docker-pub:latest
         volumeMounts:
@@ -50,7 +54,13 @@ spec:
         command:
         - "/opt/tyk-gateway/tyk"
         - "--conf=/git-conf/tykio-kubernetes-deployment/conf/tyk_gateway.conf"
+        - "--debug"
       volumes:
       - name: git-config-volume
         gitRepo:
           repository: "https://github.com/quorak/tykio-kubernetes-deployment.git"
+      - name: mongo-persistent-storage
+        gcePersistentDisk:
+          pdName: tyk-mongo-disk
+          fsType: ext4
+

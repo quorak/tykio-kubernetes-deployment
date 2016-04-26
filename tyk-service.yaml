@@ -11,9 +11,12 @@ spec:
     - port: 8080
       protocol: TCP
       name: gateway
-    - port: 3000
+    - port: 4000
       protocol: TCP
       name: dashoard
+    - port: 5000
+      protocol: TCP
+      name: websocket
     - port: 80
       targetPort: 8080
       protocol: TCP
